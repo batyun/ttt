@@ -1,49 +1,42 @@
-// test2 미로 찾기?? 11/25
+// test2 미로 찾기 
+// 간단하게 수정 11/26
 
 
 /*  fillSnailSquare
     사각형을 달팽이순서로 채우는 함수
     params: (input_N: 사각형의 크기, input_x: 채우기 시작할 모서리 위치)
     return: 채워진 사각형 array[][]
-
-    아.. array 
-    1차원은 줄이라고하고
-    2차원은 평면이라고하겠땅
 */
 function fillSnailSquare(input_N, input_x){
     // ----------------------- 변수선언
-    var dir = 1; // 진행방향 1 right, 2 down, 3 left, 4 up
-    // 이거는 input_x에 일치시켰음!!! 예) x가 2면 down부터 시작
-
     var count = 1; // 채울 숫자
 
-    // 빈칸평면만들기: 한 줄 만들고 각각에 또 줄 추가
+    // 빈칸 2차원 배열 만들기: 한 줄 만들고 각각에 또 줄 추가
     var square = new Array(input_N);
     for(let i = 0; i< square.length; i++){
         square[i] = new Array(input_N);
     }
 
-    var row = 0; // 평면 좌표 가로
-    var col = 0; // 평면 좌표 세로
+    var dir = 1; // 진행방향 1 right, 2 down, 3 left, 4 up
+    // input_x와 숫자를 일치시켰음!!! 예) x가 2면 down부터 시작
 
-    var dist = input_N; // 방향 바꾸기전 가야할 거리
-    var distCount = 0; // 방향 바꾸기전 간 거리
-
+    var row = 0; // 평면 좌표
+    var col = 0; 
 
     // 시작모서리에 따라 초기화!!!!!! 계획한거 그대로 적기!
     switch(input_x){
-        case 1:
+        case 1: // 1일때 0,0         
             break;
-        case 2:
+        case 2: // 2일때 N-1,0
             dir = 2;
             row = input_N-1;
             break;
-        case 3:
+        case 3: // 3일때 N-1, N-1
             row = input_N-1;
             col = input_N-1;
             dir = 3;
             break;
-        case 4:
+        case 4: // 4일때 0, N-1
             col = input_N-1;
             dir = 4;
             break;
@@ -52,97 +45,48 @@ function fillSnailSquare(input_N, input_x){
     }
 
 
-    // 5x5일때 한방향에 가야할거리가 5 4 4 3, 3 2 2 1 순이니까 
-    // 첫시작방향에서 두번째일때는 가야할 거리가 줄어들면 안됨
-    // 마지막도 마찬가지
-    var two = input_x + 1; // x시작점에서 1을 더하면 두번째
-    var four = input_x + 3;
-    if(four > 4) four -= 4;
-    if(two > 4) two -= 4;
+    // ---------------------------- 초기화 끝, 알고리즘 시작
 
 
+    // 5x5일 때 5 4 4 3 3 2 2 1 이 순서로 거리가 짧아지는데
+    // 두개씩 잘라서 반바퀴씩돌면 5 4, 4 3, 3 2, 2 1
+    // 이렇게 묶으면 n-1로 줄어들고 규칙도 n, n-1로 간단하므로 반바퀴씩 돌것이다!
+    for(let n = input_N; n >= 1; n--){
+        
+        // n칸 채우기, turn해서 n-1칸 채우기: 총 2n-1칸 채우기
+        for(let m = 1; m <= 2*n-1; m++){
+            // debugger;
+            square[col][row] = count++; // 칸에 값을 채운다
 
 
-    // 채우기 시작!!
-    while(count <= input_N*input_N){
+            // n까지 채웠을 때 turn right해서 남은 n-1채울거다
+            if(m == n || m == 2*n-1 ){ // 2n-1까지 다 채웠을 때도 turn right
+                if(++dir > 4) dir -= 4; // turn right
+            }
 
-        square[col][row] = count++; // 값을 채운다        
-        distCount++;
+            // 방향에 따라 좌표 증가 감소
+            switch(dir){
+                case 1: // right
+                    row++;
+                    break;
+                case 2: // down
+                    col++;
+                    break;
+                case 3: // left
+                    row--;
+                    break;
+                case 4: // up
+                    col--;
+                    break;
+                default:
+                    return -1;
+            }
+        } // ㄱ자를 채웠다
 
-        if(distCount >= dist){ // 가야할 거리 다갔으면 방향 전환
-            if(two != dir && four != dir) dist--; // 거리 줄어들기
+    } // 반복
 
-            dir++; // 방향 전환
-            
-            if(dir > 4) dir -= 4; // 다시 방향이 초기화
-            distCount = 0;
-        }
-
-        // 방향에 따라 좌표 증가 감소
-        switch(dir){
-            case 1: // right
-                row++;
-                break;
-            case 2: // down
-                col++;
-                break;
-            case 3: // left
-                row--;
-                break;
-            case 4: // up
-                col--;
-                break;
-            default:
-                return -1;
-        }
-
-    }
-
-    return square; // 채워진 사각형을 리턴
+    return square;
 }
-
-
-// 끝
-
-
-
-
-
-// 문제푼 과정
-
-/*
-계획:
-
-계획 전에 문제파악:
-x = 1,2,3,4 중에 받을 수 있고
-1일때 0,0
-2일때 N-1,0
-3일때 N-1, N-1
-4일때 0, N-1
-시작 위치는 이러하다 ㅋ
-
-채울 값은 1부터 시작해서 N*N까지이고
-
-진행방향을 정해주면서 채우면 좋겠다
-
-*/
-
-
-/*
-채우는 개수 한방향에 몇개씩인지 1x1일 때부터
-1
-2 1 1
-3 2 2 1 1
-4 3 3 2 2 1 1
-5 4 4 3 3 2 2 1 1
-
-5 4 4 3, 3 2 2 1, 1
-나는 이렇게 네개로 잘라서 사각형 한바퀴를 돌았는데
-
-5 4, 4 3, 3 2, 2 1, 1
-이렇게 잘라서 반바퀴씩 돌수도 있겠구나
-*/
-
 
 
 
